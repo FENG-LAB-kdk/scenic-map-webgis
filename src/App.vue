@@ -5,9 +5,21 @@
       style="width: 300px; background: #f5f5f5; overflow-y: auto"
     >
       <h2 style="padding: 10px">景点列表</h2>
+      <div style="padding: 0 10px 10px">
+        <input
+          v-model="searchQuery"
+          placeholder="搜索景点..."
+          style="
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+          "
+        />
+      </div>
       <ul style="list-style: none; padding: 0">
         <li
-          v-for="spot in spots"
+          v-for="spot in filteredSpots"
           :key="spot.id"
           @click="flyToSpot(spot)"
           :class="{ active: selectedId === spot.id }"
@@ -49,7 +61,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import MapView from "./components/MapView.vue";
 
 const spots = ref([
@@ -81,6 +93,21 @@ const deleteSpot = (id) => {
     selectedId.value = null;
   }
 };
+// 搜索关键词
+const searchQuery = ref("");
+
+// 计算属性：根据搜索词过滤景点列表
+const filteredSpots = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return spots.value; // 如果搜索词为空，返回全部景点
+  }
+  const query = searchQuery.value.trim().toLowerCase();
+  return spots.value.filter(
+    (spot) =>
+      spot.name.toLowerCase().includes(query) ||
+      spot.desc.toLowerCase().includes(query),
+  );
+});
 </script>
 
 <style>
