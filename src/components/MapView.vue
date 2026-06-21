@@ -1,23 +1,23 @@
 <template>
   <!-- 外层容器确保高度 100% -->
-  <div class="map-wrapper" style="height: 100%; width: 100%;">
-    <div id="map" style="height: 100%; width: 100%;"></div>
+  <div class="map-wrapper" style="height: 100%; width: 100%">
+    <div id="map" style="height: 100%; width: 100%"></div>
   </div>
 </template>
 
 <script setup>
-import { onMounted, onUnmounted } from 'vue';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import { onMounted, onUnmounted } from "vue";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
 // 接收父组件传入的景点数据
 const props = defineProps({
   spots: {
     type: Array,
-    required: true
-  }
+    required: true,
+  },
 });
 
 let map = null;
@@ -28,7 +28,7 @@ defineExpose({
   flyTo(spot) {
     if (map) {
       map.flyTo([spot.lat, spot.lng], 14);
-      const marker = markers.find(m => m.options.id === spot.id);
+      const marker = markers.find((m) => m.options.id === spot.id);
       if (marker) {
         marker.openPopup();
       }
@@ -39,15 +39,15 @@ defineExpose({
     if (map) {
       map.invalidateSize();
     }
-  }
+  },
 });
 
 // 添加所有标记
 function addMarkers() {
   if (!map) return;
-  markers.forEach(m => map.removeLayer(m));
+  markers.forEach((m) => map.removeLayer(m));
   markers = [];
-  props.spots.forEach(spot => {
+  props.spots.forEach((spot) => {
     const marker = L.marker([spot.lat, spot.lng])
       .bindPopup(`<b>${spot.name}</b><br>${spot.desc}`)
       .addTo(map);
@@ -76,18 +76,21 @@ onMounted(() => {
   });
 
   // 创建地图实例
-  map = L.map('map').setView([34.34, 108.94], 10);
-  
+  map = L.map("map").setView([34.34, 108.94], 10);
+
   // 使用 OpenStreetMap 瓦片（国内可用性较好）
-  L.tileLayer('https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
-  attribution: '高德地图'
-}).addTo(map);
+  L.tileLayer(
+    "https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
+    {
+      attribution: "高德地图",
+    },
+  ).addTo(map);
 
   // 添加标记
   addMarkers();
 
   // 监听窗口 resize 事件
-  window.addEventListener('resize', handleResize);
+  window.addEventListener("resize", handleResize);
 
   // 额外：在下一帧再刷新一次，确保布局稳定
   setTimeout(() => {
@@ -97,7 +100,7 @@ onMounted(() => {
 
 // 组件销毁时移除事件监听
 onUnmounted(() => {
-  window.removeEventListener('resize', handleResize);
+  window.removeEventListener("resize", handleResize);
   if (map) {
     map.remove();
     map = null;
