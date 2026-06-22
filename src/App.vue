@@ -3,10 +3,19 @@
     <!-- 左侧边栏 -->
     <div
       class="sidebar"
-      style="width: 300px; background: #f5f5f5; overflow-y: auto; padding: 10px"
+      style="
+        width: 300px;
+        background: #f5f5f5;
+        overflow-y: auto;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+      "
     >
       <h2 style="padding: 0 0 10px 0">景点列表</h2>
-      <ul style="list-style: none; padding: 0">
+
+      <!-- 景点列表 -->
+      <ul style="list-style: none; padding: 0; flex: 1; overflow-y: auto">
         <li
           v-for="spot in spots"
           :key="spot.id"
@@ -36,13 +45,62 @@
               border-radius: 4px;
               padding: 4px 8px;
               cursor: pointer;
+              font-size: 12px;
             "
           >
             删除
           </button>
         </li>
       </ul>
+
+      <!-- 添加景点表单 -->
+      <hr style="margin: 10px 0" />
+      <h3 style="margin: 0 0 8px 0; font-size: 14px">➕ 添加新景点</h3>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <input
+          v-model="newSpot.name"
+          placeholder="景点名"
+          style="padding: 6px; border: 1px solid #ccc; border-radius: 4px"
+        />
+        <input
+          v-model="newSpot.lng"
+          placeholder="经度 (如 108.959)"
+          style="padding: 6px; border: 1px solid #ccc; border-radius: 4px"
+        />
+        <input
+          v-model="newSpot.lat"
+          placeholder="纬度 (如 34.219)"
+          style="padding: 6px; border: 1px solid #ccc; border-radius: 4px"
+        />
+        <textarea
+          v-model="newSpot.desc"
+          placeholder="描述（可选）"
+          rows="2"
+          style="
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: inherit;
+          "
+        ></textarea>
+        <button
+          @click="addSpot"
+          :disabled="!isFormValid"
+          style="
+            padding: 8px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+          "
+        >
+          添加景点
+        </button>
+      </div>
     </div>
+
     <!-- 右侧地图 -->
     <div style="flex: 1; display: flex; overflow: hidden">
       <MapView
@@ -55,7 +113,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import MapView from "./components/MapView.vue";
 
 // 1. 默认数据（只在第一次使用时生效）
@@ -102,6 +160,45 @@ const deleteSpot = (id) => {
   if (selectedId.value === id) {
     selectedId.value = null;
   }
+};
+
+// ========== 新增：添加景点 ==========
+
+// 7. 表单数据
+const newSpot = ref({
+  name: "",
+  lng: "",
+  lat: "",
+  desc: "",
+});
+
+// 8. 表单校验（计算属性）
+const isFormValid = computed(() => {
+  const name = newSpot.value.name.trim();
+  const lng = parseFloat(newSpot.value.lng);
+  const lat = parseFloat(newSpot.value.lat);
+  return name !== "" && !isNaN(lng) && !isNaN(lat);
+});
+
+// 9. 添加景点
+const addSpot = () => {
+  if (!isFormValid.value) return;
+
+  const spot = {
+    id: Date.now(), // 用时间戳作为临时唯一ID
+    name: newSpot.value.name.trim(),
+    lng: parseFloat(newSpot.value.lng),
+    lat: parseFloat(newSpot.value.lat),
+    desc: newSpot.value.desc.trim() || "暂无描述",
+  };
+
+  spots.value.push(spot);
+
+  // 清空表单
+  newSpot.value = { name: "", lng: "", lat: "", desc: "" };
+
+  // 可选：自动飞到新添加的景点
+  // flyToSpot(spot)
 };
 </script>
 
